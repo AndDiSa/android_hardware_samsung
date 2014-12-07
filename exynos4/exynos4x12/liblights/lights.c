@@ -152,6 +152,7 @@ static int set_light_backlight(struct light_device_t *dev,
 {
     int err = 0;
     int brightness = rgb_to_brightness(state);
+    int previous_brightness = read_int(PANEL_FILE);
 
     pthread_mutex_lock(&g_lock);
     err = write_int(PANEL_FILE, brightness);
@@ -165,6 +166,9 @@ static int
 set_light_buttons(struct light_device_t* dev,
         struct light_state_t const* state)
 {
+#ifdef EXYNOS4X12_TABLET
+    return 0;
+#else
     int err = 0;
     int brightness = rgb_to_brightness(state);
 
@@ -174,23 +178,30 @@ set_light_buttons(struct light_device_t* dev,
     pthread_mutex_unlock(&g_lock);
 
     return err;
+#endif
 }
 
 /* LEDs */
 static int write_leds(struct led_config led)
 {
     int err = 0;
+#ifndef EXYNOS4X12_TABLET
     pthread_mutex_lock(&g_lock);
     err = write_int(LED_RED, led.red);
     err = write_int(LED_GREEN, led.green);
     err = write_int(LED_BLUE, led.blue);
     err = write_str(LED_BLINK, led.blink);
     pthread_mutex_unlock(&g_lock);
+#endif
     return err;
 }
 
 static int set_light_leds(struct light_state_t const *state, int type)
 {
+#ifdef EXYNOS4X12_TABLET
+    return 0;
+#else
+
     struct led_config led;
     unsigned int colorRGB;
 
@@ -220,6 +231,7 @@ static int set_light_leds(struct light_state_t const *state, int type)
     }
 
     return write_leds(led);
+#endif
 }
 
 static int set_light_leds_notifications(struct light_device_t *dev,
@@ -231,6 +243,9 @@ static int set_light_leds_notifications(struct light_device_t *dev,
 static int set_light_battery(struct light_device_t *dev,
             struct light_state_t const *state)
 {
+#ifdef EXYNOS4X12_TABLET
+    return 0;
+#else
     struct led_config led;
     int brightness = rgb_to_brightness(state);
     unsigned int colorRGB;
@@ -252,6 +267,7 @@ static int set_light_battery(struct light_device_t *dev,
 
     g_BatteryStore = led;
     return write_leds(led);
+#endif
 }
 
 static int set_light_leds_attention(struct light_device_t *dev,
